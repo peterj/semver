@@ -68,7 +68,7 @@ install: ## Installs the executable or package
 .PHONY: bump-version
 BUMP := patch
 bump-version:
-	$(eval NEW_VERSION = $(shell curl https://bump.semver.xyz/$(BUMP)?version=$(VERSION)))
+	$(eval NEW_VERSION = $(shell curl http://bump.semver.xyz/$(BUMP)?version=$(VERSION)))
 	@echo "Bumping VERSION.txt from $(VERSION) to $(NEW_VERSION)"
 	echo $(NEW_VERSION) > VERSION.txt
 	git add VERSION.txt README.md
