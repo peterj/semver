@@ -19,10 +19,10 @@ GO_LDFLAGS=-ldflags "-w $(CTIMEVAR)"
 # Docker settings
 REGISTRY_NAME := peterjreg.azurecr.io
 SVC_DOCKERFILE := Dockerfile.svc
-SVC_IMAGE_NAME :=$(REGISTRY_NAME)/$(NAME):$(VERSION)
+SVC_IMAGE_NAME =$(REGISTRY_NAME)/$(NAME):$(VERSION)
 
 WEB_DOCKERFILE := Dockerfile.web
-WEB_IMAGE_NAME := $(REGISTRY_NAME)/semver-web:0.1.0
+WEB_IMAGE_NAME = $(REGISTRY_NAME)/semver-web:0.1.0
 
 all: clean build fmt lint test vet install
 
