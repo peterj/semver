@@ -5,7 +5,7 @@ PKG := github.com/peterj/$(NAME)
 GOOSARCHES = darwin/amd64
 BUILDDIR := ${PREFIX}/release
 
-VERSION := $(shell cat ./VERSION.txt)
+VERSION = $(shell cat ./VERSION.txt)
 GITCOMMIT := $(shell git rev-parse --short HEAD)
 GITUNTRACKEDCHANGES := $(shell git status --porcelain --untracked-files=no)
 ifneq ($(GITUNTRACKEDCHANGES),)
