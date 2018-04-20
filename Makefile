@@ -16,7 +16,7 @@ VERSION_INFO=-X $(PKG)/version.GITCOMMIT=$(GITCOMMIT) -X $(PKG)/version.VERSION=
 # Set the linker flags
 GO_LDFLAGS=-ldflags "-w $(VERSION_INFO)"
 
-all: clean build fmt lint test vet install
+all: build fmt lint test vet
 
 # Builds the binary
 .PHONY: build
