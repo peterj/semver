@@ -1,13 +1,13 @@
 PREFIX?=$(shell pwd)
-NAME := semver
-PKG := github.com/peterj/$(NAME)
+NAME:=semver
+PKG:=github.com/peterj/$(NAME)
 
-GOOSARCHES = darwin/amd64
-BUILDDIR := ${PREFIX}/release
+GOOSARCHES=darwin/amd64
+BUILDDIR:=${PREFIX}/release
 
-VERSION = $(shell cat ./VERSION.txt)
-GITCOMMIT := $(shell git rev-parse --short HEAD)
-GITUNTRACKEDCHANGES := $(shell git status --porcelain --untracked-files=no)
+VERSION=$(shell cat ./VERSION.txt)
+GITCOMMIT:=$(shell git rev-parse --short HEAD)
+GITUNTRACKEDCHANGES:=$(shell git status --porcelain --untracked-files=no)
 ifneq ($(GITUNTRACKEDCHANGES),)
 	GITCOMMIT := $(GITCOMMIT)-dirty
 endif
@@ -17,12 +17,13 @@ CTIMEVAR=-X $(PKG)/version.GITCOMMIT=$(GITCOMMIT) -X $(PKG)/version.VERSION=$(VE
 GO_LDFLAGS=-ldflags "-w $(CTIMEVAR)"
 
 # Docker settings
-REGISTRY_NAME := peterjreg.azurecr.io
-SVC_DOCKERFILE := Dockerfile.svc
-SVC_IMAGE_NAME =$(REGISTRY_NAME)/$(NAME):$(VERSION)
+REGISTRY_NAME:=peterjreg.azurecr.io
+SVC_DOCKERFILE:=Dockerfile.svc
+SVC_IMAGE_NAME=$(REGISTRY_NAME)/$(NAME):$(VERSION)
 
-WEB_DOCKERFILE := Dockerfile.web
-WEB_IMAGE_NAME = $(REGISTRY_NAME)/semver-web:0.1.0
+WEB_NAME=semver-web
+WEB_DOCKERFILE:=Dockerfile.web
+WEB_IMAGE_NAME=$(REGISTRY_NAME)/$(WEB_NAME):$(VERSION)
 
 all: clean build fmt lint test vet install
 
@@ -64,6 +65,15 @@ install: ## Installs the executable or package
 	@echo "-> $@"
 	go install -a -tags "$(BUILDTAGS)" ${GO_LDFLAGS} .
 
+.PHONY: bump-version
+BUMP := patch
+bump-version:
+	$(eval NEW_VERSION = $(shell curl https://bump.semver.xyz/$(BUMP)?version=$(VERSION)))
+	@echo "Bumping VERSION.txt from $(VERSION) to $(NEW_VERSION)"
+	echo $(NEW_VERSION) > VERSION.txt
+	git add VERSION.txt README.md
+	git commit -vsam "Bump version to $(NEW_VERSION)"
+
 # Builds a docker image
 define build_image
 	docker build -f $(1) -t $(2) .
@@ -100,31 +110,40 @@ publish.svc: build.image.svc push.image.svc
 .PHONY: publish.web
 publish.web: build.image.web push.image.web
 
-KUBE_NAMESPACE := semverservice
-RELEASE_NAME := prod
+KUBE_NAMESPACE:=semverservice
+RELEASE_NAME:=prod
+SVC_HELM_CHART:=helm/semver-svc
+WEB_HELM_CHART:=helm/semver-web
+
+# Installs a new Helm chart
+define helm_install
+	helm install --name $(1) --namespace $(2) --set=image.tag=$(3) $(4)
+endef
+
+# Upgrades an existing Helm chart
+define helm_upgrade
+	helm upgrade $(1) --namespace $(2) --set=image.tag=$(3) $(4)
+endef
 
 .PHONY: install.svc
 install.svc:
 	@echo "-> $@"
-	helm install --name $(RELEASE_NAME) --namespace $(KUBE_NAMESPACE) --set=image.tag=$(VERSION) helm/semver-svc
+	$(call helm_install,$(RELEASE_NAME)-svc,$(KUBE_NAMESPACE),$(VERSION),$(SVC_HELM_CHART))
 
-define bump_version
-	curl https://bump.semver.xyz/minor?version=$(VERSION)
-endef
+.PHONY: install.web
+install.web:
+	@echo "-> $@"
+	$(call helm_install,$(RELEASE_NAME)-web,$(KUBE_NAMESPACE),$(VERSION),$(WEB_HELM_CHART))
 
-.PHONY: bump-version
-BUMP := patch
-bump-version:
-	$(eval NEW_VERSION = $(shell curl https://bump.semver.xyz/$(BUMP)?version=$(VERSION)))
-	@echo "Bumping VERSION.txt from $(VERSION) to $(NEW_VERSION)"
-	echo $(NEW_VERSION) > VERSION.txt
-	git add VERSION.txt README.md
-	git commit -vsam "Bump version to $(NEW_VERSION)"
-
-# Builds and pushes the image, then upgrades the release.
-upgrade: bump-version publish.svc upgrade.svc
+# Builds and pushes the image, then upgrades the releases.
+upgrade: bump-version publish.svc publish.web upgrade.svc upgrade.web
 
 .PHONY: upgrade.svc
 upgrade.svc:
 	@echo "-> $@"
-	helm upgrade $(RELEASE_NAME) --namespace $(KUBE_NAMESPACE) --set=image.tag=$(VERSION) helm/semver-svc
+	$(call helm_upgrade,$(RELEASE_NAME)-svc,$(KUBE_NAMESPACE),$(VERSION),$(SVC_HELM_CHART))
+
+.PHONY: upgrade.web
+upgrade.web:
+	@echo "-> $@"
+	$(call helm_upgrade,$(RELEASE_NAME)-web,$(KUBE_NAMESPACE),$(VERSION),$(WEB_HELM_CHART))
