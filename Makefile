@@ -135,6 +135,7 @@ install.web:
 	@echo "-> $@"
 	$(call helm_install,$(RELEASE_NAME)-web,$(KUBE_NAMESPACE),$(VERSION),$(WEB_HELM_CHART))
 
+.PHONY: upgrade
 # Builds and pushes the image, then upgrades the releases.
 upgrade: | bump-version publish.svc publish.web upgrade.svc upgrade.web
 
