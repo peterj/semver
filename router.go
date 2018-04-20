@@ -1,0 +1,32 @@
+package main
+
+import (
+	"net/http"
+
+	"github.com/gorilla/mux"
+)
+
+// NewRouter creates a new mux Router
+func NewRouter() *mux.Router {
+	router := mux.NewRouter().StrictSlash(true)
+	withLogger := func(handler http.HandlerFunc, name string) http.Handler {
+		return Logger(handler, name)
+	}
+
+	router.Methods("GET").
+		Path("/").
+		Handler(http.FileServer(http.Dir("./public")))
+
+	router.Methods("GET").
+		Path("/health").
+		Name("health").
+		Handler(withLogger(HealthHandler, "health"))
+
+	router.Methods("GET").
+		Path("/bump/{type}").
+		Name("bump").
+		Queries("version", "{version}").
+		Handler(withLogger(BumpHandler, "bump"))
+
+	return router
+}

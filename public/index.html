@@ -1,0 +1,63 @@
+<!doctype html>
+<html lang="en" class="no-js">
+
+<head>
+    <meta charset="utf-8">
+    <meta http-equiv="x-ua-compatible" content="ie=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>semver.xyz - bump your semver</title>
+    <meta name="description" content="Simple service for bumping semantic versions">
+    <link rel="stylesheet" href="style.css">
+    <script src="script.js"></script>
+</head>
+
+<body>
+    <header>
+        <nav>
+            <ul>
+                <li>
+                    <a href="/">Home</a>
+            </ul>
+        </nav>
+    </header>
+    <section>
+        <strong>semver.xyz is a simple service that allows you to bump semantic version. You give it a version and a type of bump
+            you want (major, minor, patch) and it will return you the updated version string.</strong>
+    </section>
+    <section id="pageContent">
+        <main role="main">
+            <article>
+                <h2>How to use it? </h2>
+                <p>There's only one endpoint you can call:
+                    <code>https://www.semver.xyz/bump/{bumpType}?version={version}</code> where
+                    <i>bumpType</i> can be major, minor or patch and version is the version string you want to bump (e.g. 1.0.0).
+                </p>
+                <p>
+                    Incrementing minor version:
+                    <code>
+                        $ curl https://semver.xyz/bump/minor?version=1.0.0
+                        1.1.0
+                    </code>
+                    <br/> Or major:
+                    <code>
+                        $ curl https://semver.xyz/bump/major?version=1.0.0
+                        2.0.0
+                    </code>
+                </p>
+            </article>
+        </main>
+    </section>
+    <footer>
+        <p>HTML template from:
+            <a href="http://html5-templates.com/" target="_blank" rel="nofollow">HTML5 Templates</a>
+        </p>
+        <address>
+            Contact:
+            <a href="mailto:hello@semver.xyz">Contact</a>
+        </address>
+    </footer>
+
+
+</body>
+
+</html>

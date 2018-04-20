@@ -1,0 +1,31 @@
+
+apiVersion: extensions/v1beta1
+kind: Ingress
+metadata:
+  name: semverxyz
+  namespace: semverservice
+  annotations:
+    kubernetes.io/ingress.class: nginx
+    kubernetes.io/tls-acme: 'true'
+    nginx.ingress.kubernetes.io/rewrite-target: /
+spec:
+  rules:
+    - host: semver.xyz
+      http:
+        paths:
+          - backend:
+              serviceName: semver-svc
+              servicePort: 80
+            path: /
+    - host: www.semver.xyz
+      http:
+        paths:
+          - backend:
+              serviceName: semver-svc
+              servicePort: 80
+            path: /
+  tls:
+    - hosts:
+        - "www.semver.xyz"
+        - "semver.xyz"
+      secretName: tls-semver-secret
