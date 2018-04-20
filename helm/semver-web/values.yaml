@@ -1,0 +1,31 @@
+# Default values for semver-web.
+# This is a YAML-formatted file.
+# Declare variables to be passed into your templates.
+
+replicaCount: 1
+
+image:
+  repository: peterjreg.azurecr.io/semver-web
+  tag: 0.1.0
+  pullPolicy: Always
+  imagePullSecret: peterjregistry
+
+service:
+  type: ClusterIP
+  port: 80
+
+ingress:
+  enabled: true
+  annotations: 
+    kubernetes.io/ingress.class: nginx
+    kubernetes.io/tls-acme: "true"
+    nginx.ingress.kubernetes.io/rewrite-target: /
+  path: /
+  hosts:
+    - semver.xyz
+    - www.semver.xyz
+  tls: 
+   - secretName: tls-semver-web-secret
+     hosts:
+       - "semver.xyz"
+       - "www.semver.xyz"

@@ -1,0 +1,76 @@
+<!doctype html>
+<html lang="en" class="no-js">
+
+<head>
+    <meta charset="utf-8">
+    <meta http-equiv="x-ua-compatible" content="ie=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>semver.xyz - bump your semver</title>
+    <meta name="description" content="Simple service for bumping semantic versions">
+    <link rel="stylesheet" href="style.css">
+    <script src="script.js"></script>
+</head>
+
+<body>
+    <header>
+        <h1>Welcome to
+            <b>semver.xyz</b>
+        </h1>
+    </header>
+    <section>
+        <strong>semver.xyz is a simple service that allows you to bump semantic version. You give it a version and a type of bump
+            you want (major, minor, patch) and it will return you the updated version string.</strong>
+    </section>
+    <section id="pageContent">
+        <main role="main">
+            <article>
+                <h2>How to use it? </h2>
+                <p>There's only one endpoint you can call:
+                    <br/>
+                    <br/>
+                    <code>https://www.semver.xyz/bump/{bumpType}?version={version}</code>
+                    <br/>
+                    <br/> where
+                    <i>bumpType</i> can be
+                    <b>major</b>,
+                    <b>minor</b> or
+                    <b>patch</b> and version is the version string you want to bump (e.g. 1.0.0).
+                </p>
+            </article>
+
+            <article>
+                <h2>Examples:</h2>
+                <p>
+                    Incrementing minor version (using curl):
+                    <br/>
+                    <br/>
+                    <code>
+                        curl https://bump.semver.xyz/minor?version=1.0.0
+                    </code>
+                    <br/>
+                    <br/>Or major:
+                    <br/>
+                    <br/>
+                    <code>
+                        curl https://bump.semver.xyz/major?version=1.0.0
+                    </code>
+                    <br/>
+                    <br/> You can also try the same from the browser
+                    <a href="https://bump.semver.xyz/minor?version=1.0.0">https://bump.semver.xyz/minor?version=1.0.0</a>
+                </p>
+            </article>
+        </main>
+    </section>
+    <hr/>
+    <footer>
+        <address>
+            <b>Contact:</b>
+            <a href="mailto:hello@semver.xyz">Email</a>
+            <a href="http://twitter.com/pjausovec">Twitter</a>
+        </address>
+    </footer>
+
+
+</body>
+
+</html>
