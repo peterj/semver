@@ -1,3 +1,7 @@
+ifeq ($(DOCKER_REGISTRY),)
+  $(error set the DOCKER_REGISTRY environment variable)
+endif
+
 include docker.mk helm.mk 
 NAME:=semver
 PKG:=github.com/peterj/$(NAME)
