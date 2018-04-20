@@ -1,4 +1,4 @@
-include docker.mk helm.mk 
+include docker.mk 
 NAME:=semver
 PKG:=github.com/peterj/$(NAME)
 GOOSARCHES=darwin/amd64
