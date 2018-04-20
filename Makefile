@@ -1,9 +1,7 @@
-PREFIX?=$(shell pwd)
+include docker.mk helm.mk 
 NAME:=semver
 PKG:=github.com/peterj/$(NAME)
-
 GOOSARCHES=darwin/amd64
-BUILDDIR:=${PREFIX}/release
 
 VERSION=$(shell cat ./VERSION.txt)
 GITCOMMIT:=$(shell git rev-parse --short HEAD)
@@ -12,59 +10,45 @@ ifneq ($(GITUNTRACKEDCHANGES),)
 	GITCOMMIT := $(GITCOMMIT)-dirty
 endif
 
-# Sets the GITCOMMIT and VERSION
-CTIMEVAR=-X $(PKG)/version.GITCOMMIT=$(GITCOMMIT) -X $(PKG)/version.VERSION=$(VERSION)
-GO_LDFLAGS=-ldflags "-w $(CTIMEVAR)"
+# Sets the actual GITCOMMIT and VERSION values 
+VERSION_INFO=-X $(PKG)/version.GITCOMMIT=$(GITCOMMIT) -X $(PKG)/version.VERSION=$(VERSION)
 
-# Docker settings
-REGISTRY_NAME:=peterjreg.azurecr.io
-SVC_DOCKERFILE:=Dockerfile.svc
-SVC_IMAGE_NAME=$(REGISTRY_NAME)/$(NAME):$(VERSION)
-
-WEB_NAME=semver-web
-WEB_DOCKERFILE:=Dockerfile.web
-WEB_IMAGE_NAME=$(REGISTRY_NAME)/$(WEB_NAME):$(VERSION)
+# Set the linker flags
+GO_LDFLAGS=-ldflags "-w $(VERSION_INFO)"
 
 all: clean build fmt lint test vet install
 
+# Builds the binary
 .PHONY: build
-build: $(NAME)
-
-$(NAME): *.go VERSION.txt
+build:
 	@echo "-> $@"
 	CGO_ENABLED=0 go build -i -installsuffix cgo ${GO_LDFLAGS} -o $(NAME) .
 
-.PHONY: clean
-clean:
-	@echo "-> $@"
-	$(RM) $(NAME)
-	$(RM) -r $(BUILDDIR)
-
+# Gofmt all code (sans vendor folder) just in case not using automatic formatting
 .PHONY: fmt
-fmt: ## Verifies all files have men `gofmt`ed
+fmt: 
 	@echo "-> $@"
-	@gofmt -s -l . | grep -v '.pb.go:' | grep -v vendor | tee /dev/stderr
+	@gofmt -s -l . | grep -v vendor | tee /dev/stderr
 
+# Run golint
 .PHONY: lint
-lint: ## Verifies `golint` passes
+lint:
 	@echo "-> $@"
-	@golint ./... | grep -v '.pb.go:' | grep -v vendor | tee /dev/stderr
+	@golint ./... | grep -v vendor | tee /dev/stderr
 
+# Run all tests
 .PHONY: test
-test: ## Runs the go tests
+test:
 	@echo "-> $@"
-	@go test -v -tags "$(BUILDTAGS) cgo" $(shell go list ./... | grep -v vendor)
+	@go test -v $(shell go list ./... | grep -v vendor)
 
+# Run govet
 .PHONY: vet
-vet: ## Verifies `go vet` passes
+vet:
 	@echo "-> $@"
-	@go vet $(shell go list ./... | grep -v vendor) | grep -v '.pb.go:' | tee /dev/stderr
+	@go vet $(shell go list ./... | grep -v vendor) | tee /dev/stderr
 
-.PHONY: install
-install: ## Installs the executable or package
-	@echo "-> $@"
-	go install -a -tags "$(BUILDTAGS)" ${GO_LDFLAGS} .
-
+# Bumps the version of the service
 .PHONY: bump-version
 BUMP := patch
 bump-version:
@@ -74,77 +58,7 @@ bump-version:
 	git add VERSION.txt README.md
 	git commit -vsam "Bump version to $(NEW_VERSION)"
 
-# Builds a docker image
-define build_image
-	docker build -f $(1) -t $(2) .
-endef
 
-# Pushes a docker image
-define push_image
-	docker push $(1)
-endef
-
-.PHONY: build.image.svc
-build.image.svc:
-	@echo "-> $@"
-	$(call build_image, $(SVC_DOCKERFILE), $(SVC_IMAGE_NAME))
-
-.PHONY: build.image.web
-build.image.web:
-	@echo "-> $@"
-	$(call build_image, $(WEB_DOCKERFILE), $(WEB_IMAGE_NAME))
-
-.PHONY: push.image.svc
-push.image.svc:
-	@echo "-> $@"
-	$(call push_image, $(SVC_IMAGE_NAME))
-
-.PHONY: push.image.web
-push.image.web:
-	@echo "-> $@"
-	$(call push_image, $(WEB_IMAGE_NAME))
-
-.PHONY: publish.svc
-publish.svc: build.image.svc push.image.svc
-
-.PHONY: publish.web
-publish.web: build.image.web push.image.web
-
-KUBE_NAMESPACE:=semverservice
-RELEASE_NAME:=prod
-SVC_HELM_CHART:=helm/semver-svc
-WEB_HELM_CHART:=helm/semver-web
-
-# Installs a new Helm chart
-define helm_install
-	helm install --name $(1) --namespace $(2) --set=image.tag=$(3) $(4)
-endef
-
-# Upgrades an existing Helm chart
-define helm_upgrade
-	helm upgrade $(1) --namespace $(2) --set=image.tag=$(3) $(4)
-endef
-
-.PHONY: install.svc
-install.svc:
-	@echo "-> $@"
-	$(call helm_install,$(RELEASE_NAME)-svc,$(KUBE_NAMESPACE),$(VERSION),$(SVC_HELM_CHART))
-
-.PHONY: install.web
-install.web:
-	@echo "-> $@"
-	$(call helm_install,$(RELEASE_NAME)-web,$(KUBE_NAMESPACE),$(VERSION),$(WEB_HELM_CHART))
-
-.PHONY: upgrade
 # Builds and pushes the image, then upgrades the releases.
-upgrade: | bump-version publish.svc publish.web upgrade.svc upgrade.web
-
-.PHONY: upgrade.svc
-upgrade.svc:
-	@echo "-> $@"
-	$(call helm_upgrade,$(RELEASE_NAME)-svc,$(KUBE_NAMESPACE),$(VERSION),$(SVC_HELM_CHART))
-
-.PHONY: upgrade.web
-upgrade.web:
-	@echo "-> $@"
-	$(call helm_upgrade,$(RELEASE_NAME)-web,$(KUBE_NAMESPACE),$(VERSION),$(WEB_HELM_CHART))
+.PHONY: upgrade
+upgrade:| bump-version publish.svc publish.web upgrade.svc upgrade.web
