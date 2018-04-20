@@ -136,7 +136,7 @@ install.web:
 	$(call helm_install,$(RELEASE_NAME)-web,$(KUBE_NAMESPACE),$(VERSION),$(WEB_HELM_CHART))
 
 # Builds and pushes the image, then upgrades the releases.
-upgrade: bump-version publish.svc publish.web upgrade.svc upgrade.web
+upgrade: | bump-version publish.svc publish.web upgrade.svc upgrade.web
 
 .PHONY: upgrade.svc
 upgrade.svc:
