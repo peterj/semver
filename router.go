@@ -14,11 +14,6 @@ func NewRouter() *mux.Router {
 	}
 
 	router.Methods("GET").
-		Path("/health").
-		Name("health").
-		Handler(withLogger(HealthHandler, "health"))
-
-	router.Methods("GET").
 		Path("/{type}").
 		Name("bump").
 		Queries("version", "{version}").

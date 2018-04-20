@@ -9,21 +9,9 @@ import (
 	"github.com/peterj/semver/pkg/semver"
 )
 
-type healthStatus struct {
-	host    string
-	healthy bool
-}
-
-// HealthHandler handles calls to the health endpoint
-func HealthHandler(w http.ResponseWriter, r *http.Request) {
-	w.Header().Set("content-type", "application/json")
-	w.WriteHeader(http.StatusOK)
-	return
-}
-
 // BumpHandler handles calls to the bump semver endpoint
 func BumpHandler(w http.ResponseWriter, r *http.Request) {
-	w.Header().Set("content-type", "application/text")
+	w.Header().Set("content-type", "application/json")
 	v := mux.Vars(r)
 
 	bumpType := v["type"]
