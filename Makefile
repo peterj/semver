@@ -10,12 +10,6 @@ ifneq ($(GITUNTRACKEDCHANGES),)
 	GITCOMMIT := $(GITCOMMIT)-dirty
 endif
 
-# Docker settings (make sure DOCKER_REGISTRY environment variable is set)
-REGISTRY_NAME:=${DOCKER_REGISTRY}
-ifndef REGISTRY_NAME
-$(error set the DOCKER_REGISTRY environment variable)
-endif
-
 # Sets the actual GITCOMMIT and VERSION values 
 VERSION_INFO=-X $(PKG)/version.GITCOMMIT=$(GITCOMMIT) -X $(PKG)/version.VERSION=$(VERSION)
 
