@@ -1,6 +1,7 @@
 # Semantic versioning service
 
 [![Go Report Card](https://goreportcard.com/badge/github.com/peterj/semver?style=flat-square)](https://goreportcard.com/report/github.com/peterj/semver)
+[![FOSSA Status](https://app.fossa.io/api/projects/git%2Bgithub.com%2Fpeterj%2Fsemver.svg?type=shield)](https://app.fossa.io/projects/git%2Bgithub.com%2Fpeterj%2Fsemver?ref=badge_shield)
 
 This repo contains a simple service that allows you to bump semantic version.
 You give it a version and a type of bump you want (major, minor, patch) and it
@@ -62,3 +63,7 @@ If you already have an existing Helm release (i.e. you did the initial
 deployment to Kubernetes), you can use `make upgrade` command to build the
 Docker images, push them to the registry and upgrade the existing releases that
 are running inside Kubernetes.
+
+
+## License
+[![FOSSA Status](https://app.fossa.io/api/projects/git%2Bgithub.com%2Fpeterj%2Fsemver.svg?type=large)](https://app.fossa.io/projects/git%2Bgithub.com%2Fpeterj%2Fsemver?ref=badge_large)
